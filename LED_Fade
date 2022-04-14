@@ -1,0 +1,40 @@
+#include "stm32f1xx.h"
+int i,k;
+void TIM2_conf (void)
+{
+ TIM2->CR1 |= (1<<0);
+ TIM2->PSC = 7;
+ TIM2->ARR = 1000;
+ TIM2->CCR2 =0;
+ TIM2->EGR |=(1<<0);
+ TIM2->CR1 |= (1<<0);
+ TIM2->CCMR2 |= (1<<11)|(1<<14)|(0<<12);
+ TIM2->CCER |= (1<<5);
+}
+void delay(void)
+{
+ int n=0;
+ for(k=0;k<1000;k++)
+ n++;
+}
+int main (void)
+{
+    RCC->APB1ENR |= (1<<0);
+    RCC->APB2ENR |= (1<<4);
+    GPIOC->CRH |= ((1 << 20) | (1 << 21));
+    GPIOC->CRH &= ((1 << 22) | (0 << 23));
+    TIM2_conf();
+    while(1)
+    {
+      for(i=0;i<1000;i++)
+      {
+       TIM2->CCR2 = i;
+       delay();
+      }
+      for(i=1000;i>=0;i--)
+      {
+       TIM2->CCR2 = i;
+       delay();
+      }
+    }
+}
