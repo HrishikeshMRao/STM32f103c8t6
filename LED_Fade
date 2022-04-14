@@ -2,13 +2,12 @@
 int i,k;
 void TIM2_conf (void)
 {
- TIM2->CR1 |= (1<<0);
- TIM2->PSC = 7;
+ TIM2->PSC = 79;
  TIM2->ARR = 1000;
  TIM2->CCR2 =0;
  TIM2->EGR |=(1<<0);
  TIM2->CR1 |= (1<<0);
- TIM2->CCMR2 |= (1<<11)|(1<<14)|(0<<12);
+ TIM2->CCMR1 |= ((1<<11)|(1<<14)|(1<<13)|(0<<12));
  TIM2->CCER |= (1<<5);
 }
 void delay(void)
@@ -20,9 +19,9 @@ void delay(void)
 int main (void)
 {
     RCC->APB1ENR |= (1<<0);
-    RCC->APB2ENR |= (1<<4);
+    RCC->APB2ENR |= ((1<<4)|(1<<0));
     GPIOC->CRH |= ((1 << 20) | (1 << 21));
-    GPIOC->CRH &= ((1 << 22) | (0 << 23));
+    GPIOC->CRH |= ((0 << 22) | (1 << 23));
     TIM2_conf();
     while(1)
     {
