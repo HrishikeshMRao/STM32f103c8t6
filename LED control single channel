@@ -1,0 +1,61 @@
+#include "stm32f1xx.h"
+int i,k,x;
+void ADC_conf (void)
+{
+ RCC->CFGR |= (1<<15);
+ RCC->APB2ENR |= (1<<10);
+ ADC1->CR1 |= (1<<5);
+ NVIC_EnableIRQ(ADC1_2_IRQn);
+ GPIOA->CRL &= ~((1<<0)|(1<<1));
+ GPIOA->CRL |= ((1<<3)|(0<<2));
+ ADC2->SMPR2 |= ((1<<8)|(1<<7)|(1<<6));
+ ADC2->SQR3 |= (1<<1);
+ ADC2->CR2 |= ((1<<0)|(1<<1));
+ delay();
+ ADC2->CR2 |= (1<<0);
+ delay();
+ do
+ ADC1->CR2 |= (1<<2);
+ while(ADC1->CR2 & (1<<2));
+}
+void TIM2_conf (void)
+{
+ TIM2->PSC = 7;
+ TIM2->ARR = 255;
+ TIM2->CCR2 =0;
+ TIM2->EGR |=(1<<0);
+ TIM2->CR1 |= (1<<0);
+ TIM2->CCMR1 |= ((1<<11)|(1<<14)|(1<<13));
+ TIM2->CCMR1 &= ~((1<<12));
+ TIM2->CCER |= (1<<4);
+}
+void delay(void)
+{
+ int n=0;
+ for(k=0;k<2000;k++)
+ n++;
+}
+void Interrupt(void)
+{
+ if(ADC1->SR & (1<<1))
+ x = ADC1->DR;
+}
+int map(int x)
+{
+ return(x*255/4096);
+}
+int main (void)
+{
+    RCC->APB1ENR |= (1<<0);
+    RCC->APB2ENR |= ((1<<2)|(1<<0));
+    GPIOA->CRL |= ((1 << 4) | (1 << 5) | (1<<7));
+    GPIOA->CRL &= ~((1<<6));
+    TIM2_conf();
+    ADC_conf();
+    while(1)
+    {
+       TIM2->CCR2 = map(x);
+
+    }
+
+}
