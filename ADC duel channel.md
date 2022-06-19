@@ -1,5 +1,5 @@
 #include "stm32f1xx.h"
-unsigned int slash[2]={0,0};
+uint16_t slash[2]={0,0};
 int i,k,x;
 void delay(int m)
 {
@@ -12,28 +12,39 @@ void delay(int m)
 }
 void ADC_conf (void)
 {
- RCC->CFGR |= (1<<15);
- RCC->APB2ENR |= (1<<9);
+ RCC->CFGR |= (1<<15);// pre-scaler divide by 6
+ RCC->APB2ENR |= (1<<9);//adc1 enable
  GPIOA->CRL &= ~((1<<28)|(1<<29)|(1<<30)|(1<<31));//A7 as input analog
  GPIOA->CRL &= ~((1<<8)|(1<<9)|(1<<10)|(1<<11)); //A2 as input analog
- ADC1->SMPR2 |= ((1<<8)|(1<<7)|(1<<6)|(1<<22)|(1<<23)|(1<<21));
- ADC1->SQR3 |= (1<<1)|(1<<5)|(1<<6)|(1<<7);
+ //set sampling rate of channel 1 and channel 2 as max [111]
+ ADC1->SMPR2 |= ((1<<8)|(1<<7)|(1<<6)|(1<<5)|(1<<4)|(1<<3));
+ //set channel 1 as first and channel 2 as second priority to be converted
+ ADC1->SQR3 |= ((1<<0)|(1<<6));
+ //set 2 conversions
  ADC1->SQR1 |= (1<<20);
+ //enable scan mode
  ADC1->CR1 |= (1<<8);
- ADC1->CR2 |= ((1<<0)|(1<<1)|(1<<8));
- delay(1);
- ADC1->CR2 |= (1<<0);
- delay(1);
- ADC1->CR2 |= (1<<2);
- while(ADC1->CR2 & (1<<2));
 }
 void DMA_conf (void)
 {
- DMA1_Channel1->CPAR = (unsigned int)(&(ADC1->DR));
- DMA1_Channel1->CMAR = (unsigned int)slash;
+ //DMA1 enable
+ RCC->AHBENR |= (1<<0);
+ //enable DMA
+ ADC1->CR2 |= (1<<8);
+ DMA1_Channel1->CPAR = (uint32_t)&(ADC1->DR);//link adress of the DR
+ DMA1_Channel1->CMAR = (uint32_t)slash;//link adress of the array
  DMA1_Channel1->CNDTR = 2;
  DMA1_Channel1->CCR |= ((1<<10)|(1<<8)|(1<<7)|(1<<5));
  DMA1_Channel1->CCR |= (1<<0);
+ TIM2->EGR |=((1<<1)|(1<<2));
+ //enable ADon , continuous conversion
+ ADC1->CR2 |= ((1<<0)|(1<<1));
+ delay(1);
+ ADC1->CR2 |= (1<<0);
+ delay(1);
+ //calibration complete wait for it to turn 0
+ ADC1->CR2 |= (1<<2);
+ while(ADC1->CR2 & (1<<2));
 }
 void TIM2_conf (void)
 {
@@ -41,10 +52,11 @@ void TIM2_conf (void)
  TIM2->ARR = 1000;
  TIM2->CCR2 =0;
  TIM2->CCR1 =0;
- //TIM2->EGR |=(1<<0);
  TIM2->CR1 |= (1<<0);
- TIM2->CCMR1 |= ((1<<11)|(1<<14)|(1<<13)|(0<<12));//chn2 pwm enable
- TIM2->CCMR1 |= ((1<<3)|(0<<4)|(1<<5)|(1<<6));//ch1 pwm enable
+ TIM2->CCMR1 |= ((1<<11)|(1<<14)|(1<<13));//ch2 pwm enable
+ TIM2->CCMR1 &= ~(1<<12);
+ TIM2->CCMR1 |= ((1<<3)|(1<<5)|(1<<6));//ch1 pwm enable
+ TIM2->CCMR1 &= ~(1<<4);
  TIM2->CCER |= ((1<<4)|(1<<0));
 }
 int map(int z)
@@ -53,7 +65,6 @@ int map(int z)
 }
 int main (void)
 {
-	RCC->AHBENR |= (1<<0);
     RCC->APB1ENR |= (1<<0);
     RCC->APB2ENR |= ((1<<2)|(1<<0));
     GPIOA->CRL |= ((1<<4)|(1<<5)|(1<<7)|(0<<6)); //A1 as pwm output pin tim2-ch2
