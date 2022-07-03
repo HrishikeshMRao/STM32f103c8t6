@@ -20,7 +20,7 @@ void ADC_conf (void)
  //set sampling rate of channel 1 and channel 2 as max [111]
  ADC1->SMPR2 |= ((1<<8)|(1<<7)|(1<<6)|(1<<5)|(1<<4)|(1<<3));
  //set channel 1 as first and channel 2 as second priority to be converted
- ADC1->SQR3 |= ((1<<0)|(1<<6));
+ ADC1->SQR3 |= ((1<<1)|(1<<5));
  //set 2 conversions
  ADC1->SQR1 |= (1<<20);
  //enable scan mode
@@ -32,21 +32,22 @@ void ADC_conf (void)
   DMA1_Channel1->CPAR = (uint32_t)&(ADC1->DR);//link adress of the DR
   DMA1_Channel1->CMAR = (uint32_t)slash;//link adress of the array
   DMA1_Channel1->CNDTR = 2;
-  DMA1_Channel1->CCR |= ((1<<10)|(1<<8)|(1<<7)|(1<<5));
+  DMA1_Channel1->CCR |= ((1<<11)|(1<<9)|(1<<7)|(1<<5)|(1<<6));
   DMA1_Channel1->CCR |= (1<<0);
   //enable ADon , continuous conversion
  ADC1->CR2 |= ((1<<0)|(1<<1));
  delay(1);
  ADC1->CR2 |= (1<<0);
  delay(1);
- //calibration complete wait for it to turn 0
+ //calibration complete wait for it to turn 1
  ADC1->CR2 |= (1<<2);
  while(ADC1->CR2 & (1<<2));
 }
 void TIM2_conf (void)
 {
- TIM2->PSC = 7;
+ TIM2->PSC = 72;
  TIM2->ARR = 1000;
+ TIM2->CNT = 0;
  TIM2->CCR2 =0;
  TIM2->CCR1 =0;
  TIM2->CR1 |= (1<<0);
@@ -72,7 +73,7 @@ int main (void)
 	ADC_conf();
     while(1)
     {
-    	 printf("chan[1]:[%d],chan[2]:[%d]\r",slash[0],slash[1]);
+    	 //printf("chan[1]:[%d],chan[2]:[%d]\r",slash[0],slash[1]);
     	 TIM2->CCR1 = map(slash[1]);
     	 TIM2->CCR2 = map(slash[0]);
     }
