@@ -1,8 +1,13 @@
 # STM32f103c8t6
 
-<video width="630" height="300" src="https://github.com/HrishikeshMRao/STM32f103c8t6/assets/96303885/fbfb6185-133a-438e-9b45-d7c20ca5b93c.mp4"></video>
+https://github.com/HrishikeshMRao/STM32f103c8t6/assets/96303885/3e21f68b-7747-45f9-97f5-5cc582b492b5
 
-<video width="630" height="300" src="https://github.com/HrishikeshMRao/STM32f103c8t6/assets/96303885/f11608c0-2873-477c-ae58-8e680fbcc4fb.mp4"></video>
+
+
+https://github.com/HrishikeshMRao/STM32f103c8t6/assets/96303885/9655a182-2961-413f-9e82-13e474e867d0
+
+
+
 
 
 
